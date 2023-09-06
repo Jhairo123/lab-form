@@ -10,6 +10,7 @@ export function App() {
     age: "",
     password: "",
     passwordCheck: "",
+    check: false,
   });
   const [error, setError] = useState({
     email: "",
@@ -17,50 +18,92 @@ export function App() {
     age: "",
     password: "",
     passwordCheck: "",
+    check: "",
   });
-  const [enableButton, setEnableButton] = useState(true);
-  // const onSubmit = (data) => {
-  //   registerUser(data);
-  // };
+  const [enableButton, setEnableButton] = useState(false);
 
-  function handleOnSubmit(e) {
+  const onSubmit = (e) => {
     e.preventDefault();
-    if (field.email == "") alert("email is required");
-  }
+    registerUser(field);
+  };
+
   function handleOnChange(e) {
     const name = e.target.name;
     const value = e.target.value;
     setField({ ...field, [name]: value });
   }
+  const handleCheckboxChange = (e) => {
+    // const { name, checked } = e.target;
+    const name = e.target.name;
+    const checked = e.target.checked;
+    setField({ ...field, [name]: checked });
+  };
 
   useEffect(() => {
-    console.log(error);
-
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-    if (field.email === "") setError({ ...error, email: "email is required" });
+    if (field.email == "")
+      setError((error) => ({ ...error, email: "email is required" }));
     else if (!emailRegex.test(field.email))
-      setError({ ...error, email: "email is invalid" });
-    // else setError({ ...error, email: "" });
-    else if (field.name === "")
-      setError({ ...error, name: "name is required" });
-    // else setError({ ...error, name: "" });
-    else if (field.age.length === 0)
-      setError({ ...error, age: "age is required" });
+      setError((error) => ({ ...error, email: "email is invalid" }));
+    else setError((error) => ({ ...error, email: "" }));
+
+    if (field.name == "")
+      setError((error) => ({ ...error, name: "name is required" }));
+    else setError((error) => ({ ...error, name: "" }));
+
+    if (field.age.length === 0)
+      setError((error) => ({ ...error, age: "age is required" }));
     else if (field.age < 17)
-      setError({ ...error, age: "you must be above 18 to register" });
-    else if (field.password === "")
-      setError({ ...error, password: "password is required" });
-    else if (field.password.length > 5)
-      setError({ ...error, password: "password is too short" });
-    // else setError({ ...error, password: "" });
-    else if (field.passwordCheck !== field.password)
-      setError({ ...error, passwordCheck: "passwords do not match" });
-    else setError({ ...error, password: "" });
-  }, [field.email, field.name, field.age, field.password, field.passwordCheck]);
+      setError((error) => ({
+        ...error,
+        age: "you must be above 18 to register",
+      }));
+    else setError((error) => ({ ...error, age: "" }));
+
+    if (field.password == "")
+      setError((error) => ({ ...error, password: "password is required" }));
+    else if (field.password.length < 5)
+      setError((error) => ({ ...error, password: "password is too short" }));
+    else setError((error) => ({ ...error, password: "" }));
+
+    if (field.password !== field.passwordCheck)
+      setError((error) => ({
+        ...error,
+        passwordCheck: "passwords do not match",
+      }));
+    else setError((error) => ({ ...error, passwordCheck: "" }));
+
+    if (field.check !== false) setError((error) => ({ ...error, check: "" }));
+    else
+      setError((error) => ({
+        ...error,
+        check: "please read and accept the terms and conditions",
+      }));
+
+    if (
+      field.email &&
+      field.name &&
+      field.age &&
+      field.password &&
+      field.passwordCheck &&
+      field.check
+    ) {
+      setEnableButton(true);
+    } else {
+      setEnableButton(false);
+    }
+  }, [
+    field.email,
+    field.name,
+    field.age,
+    field.password,
+    field.passwordCheck,
+    field.check,
+  ]);
 
   return (
     <div>
-      <form>
+      <form onSubmit={onSubmit}>
         <div>
           <label>
             Email
@@ -148,7 +191,14 @@ export function App() {
         </div>
         <div>
           <label>
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              name="check"
+              checked={field.check}
+              onChange={(e) => {
+                handleCheckboxChange(e);
+              }}
+            />
             Accept terms & conditions: Lorem ipsum dolor sit amet, consectetur
             adipiscing elit. Pellentesque pharetra, tortor ac placerat
             elementum, neque libero luctus mi, ut efficitur nisl mauris at nisl.
@@ -157,11 +207,11 @@ export function App() {
             Vestibulum congue neque metus.
           </label>
           <span className="error" role="alert">
-            {}
+            {error.check}
           </span>
         </div>
 
-        <button onSubmit={handleOnSubmit} disabled={true}>
+        <button type="submit" disabled={!enableButton}>
           Sign up
         </button>
       </form>
